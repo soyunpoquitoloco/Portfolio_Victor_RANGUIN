@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Portfolio</title>
+
+    <style>
+        /* Add some basic styling to make it look futuristic */
+        body {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        h1, h2 {
+            color: #333;
+            font-weight: bold;
+        }
+        .contact {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        .contact a {
+            color: #fff;
+            text-decoration: none;
+        }
+        .contact a:hover {
+            color: #ccc;
+        }
+        #addProjectBtn {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #addProjectBtn:hover {
+            background-color: #3e8e41;
+        }
+        #projectForm {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        #projectForm label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        #projectForm input, #projectForm textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+        #projectForm button {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #projectForm button:hover {
+            background-color: #3e8e41;
+        }
+        .project {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        .project img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px 10px 0 0;
+        }
+        .project p {
+            margin-bottom: 20px;
+        }
+        .editProjectBtn, .deleteProjectBtn {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .editProjectBtn:hover, .deleteProjectBtn:hover {
+            background-color: #3e8e41;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-bottom: 20px;">Mon Portfolio</h1>
+
+    <div class="contact">
+        <h2>Contact</h2>
+        <p>Email : <a href="mailto:mymail@gmail.com">victorranguin@gmail.com</a></p>
+        <p>Téléphone : 0787898965</p>
+        <p>École : <a href="https://www.esilv.fr" target="_blank">ESILV</a></p>
+    </div>
+
+    <button id="addProjectBtn" style="margin-bottom: 20px;">Ajouter un projet</button>
+
+    <div id="projectForm">
+        <h2 id="formTitle" style="margin-bottom: 20px;">Ajouter un projet</h2>
+        <label for="imageUrl">URL de l'image:</label>
+        <input type="text" id="imageUrl" required>
+        <br>
+        <label for="description">Description:</label>
+        <textarea id="description" required></textarea>
+        <br>
+        <button id="submitProject">Soumettre</button>
+        <button id="cancelProject">Annuler</button>
+    </div>
+<div id="projects"></div>
+<script>
+    const addProjectBtn = document.getElementById('addProjectBtn');
+    const projectForm = document.getElementById('projectForm');
+    const submitProject = document.getElementById('submitProject');
+    const cancelProject = document.getElementById('cancelProject');
+    const projectsDiv = document.getElementById('projects');
+
+    let editingProjectIndex = null;
+
+    async function loadProjects() {
+        const response = await fetch("http://127.0.0.1:8000/projects/");
+        const projects = await response.json();
+        projectsDiv.innerHTML = '';
+        projects.forEach((project, index) => {
+            const projectDiv = createProjectDiv(project, index);
+            projectsDiv.appendChild(projectDiv);
+        });
+    }
+
+    function createProjectDiv(project, index) {
+        const projectDiv = document.createElement('div');
+        projectDiv.className = 'project';
+        projectDiv.innerHTML = `
+            <img src="${project.image_url}" alt="Projet">
+            <p>${project.description}</p>
+            <button class="editProjectBtn" data-index="${index}">Modifier</button>
+            <button class="deleteProjectBtn" data-index="${index}">Supprimer</button>
+        `;
+        return projectDiv;
+    }
+
+    addProjectBtn.addEventListener('click', () => {
+        projectForm.style.display = 'block';
+        document.getElementById('formTitle').innerText = "Ajouter un projet";
+        editingProjectIndex = null;
+        document.getElementById('imageUrl').value = '';
+        document.getElementById('description').value = '';
+    });
+
+    cancelProject.addEventListener('click', () => {
+        projectForm.style.display = 'none';
+        document.getElementById('imageUrl').value = '';
+        document.getElementById('description').value = '';
+        editingProjectIndex = null;
+    });
+
+    submitProject.addEventListener('click', async () => {
+        const imageUrl = document.getElementById('imageUrl').value;
+        const description = document.getElementById('description').value;
+
+        if (editingProjectIndex === null) {
+            // Ajouter un nouveau projet
+            await fetch("http://127.0.0.1:8000/projects/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ image_url: imageUrl, description: description })
+            });
+        } else {
+            // Modifier un projet existant
+            await fetch(`http://127.0.0.1:8000/projects/${editingProjectIndex}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ image_url: imageUrl, description: description })
+            });
+        }
+
+        projectForm.style.display = 'none';
+        document.getElementById('imageUrl').value = '';
+        document.getElementById('description').value = '';
+        editingProjectIndex = null;
+        loadProjects();
+    });
+
+    projectsDiv.addEventListener('click', async (event) => {
+        const index = event.target.dataset.index;
+        if (event.target.classList.contains('deleteProjectBtn')) {
+            await fetch(`http://127.0.0.1:8000/projects/${index}`, {
+                method: "DELETE"
+            });
+            loadProjects();
+        }
+
+        if (event.target.classList.contains('editProjectBtn')) {
+            const response = await fetch("http://127.0.0.1:8000/projects/");
+            const projects = await response.json();
+            const project = projects[index];
+
+            document.getElementById('imageUrl').value = project.image_url;
+            document.getElementById('description').value = project.description;
+            document.getElementById('formTitle').innerText = "Modifier le projet";
+            projectForm.style.display = 'block';
+            editingProjectIndex = index;
+        }
+    });
+
+    // Charger les projets au chargement de la page
+    loadProjects();
+</script>
+
+</body>
+</html>
