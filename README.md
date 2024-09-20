@@ -1,6 +1,6 @@
 # Portfolio
-Must have : Une page Showroom principale qui affiche bien les projets (images et paragraphes) (6 points)
-Une possibilité de rajouter et de modifier les projets avec une page edit pour modifier les informations des projets (4 points)
+Must have : Une page Showroom principale qui affiche bien les projets (images et paragraphes) (9 points)
+Une possibilité de rajouter et de modifier les projets avec une page edit pour modifier les informations des projets (1 points)
 
 Nice to have: 
 Une page d'introduction propre qui me présente avec des informations personnelles, des liens à des sites de l'ift. (2 points)
