@@ -41,7 +41,7 @@ async def delete_project(project_index: int):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-   with open("Final.html", "r") as f:
+   with open("index.html", "r") as f:
        return f.read()
 
 @app.put("/projects/{project_index}")
